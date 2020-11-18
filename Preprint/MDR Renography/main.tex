@@ -113,7 +113,7 @@ MDR does not impose additional assumptions beyond those implicit in the physical
 
 Free-breathing magnetic resonance renography (MRR) \cite{Basak2019}, or dynamic contrast-enhanced MRI (DCE-MRI) of the kidney, exhibits a combination of characteristics that present extremely challenging conditions for motion correction. This includes major reversals in image contrast and large motion amplitudes compared to the internal structures of the target organ. As a result, and despite intensive research in the area, a sufficiently robust motion-correction approach for MRR has not yet been identified \cite{Zollner2020}. 
 
-The aim of this study was to investigate whether MDR is a suitable approach to correct for breathing motion in high-temporal resolution MRR acquired under free breathing. The standard formulation of MDR was generalised to cover this type of problem, and MDR was evaluated on a kidney-mimicking digital reference object (DRO), as well as on patient data using multi-slice 2D and 3D acquisitions. The algorithm, DRO and patient data are freely available as supplementary material to allow independent verification of the conclusions and serve as benchmarks for future developments in motion correction.
+The aim of this study was to investigate whether MDR is a suitable approach to correct for breathing motion in high-temporal resolution MRR acquired under free breathing. The standard formulation of MDR was generalised to cover this type of problem, and MDR was evaluated on a kidney-mimicking digital reference object (DRO), as well as on patient data using multi-slice 2D and 3D acquisitions. The algorithm, DRO and patient data are freely available as supplementary material to allow independent verification of the conclusions and serve as benchmarks for future developments in motion correction (github.com/plaresmedima/Flouri_et_al_2020).
 
 \section{Methods}
 
@@ -250,7 +250,7 @@ At each fixed resolution level $\Delta$, the interpolation weights (Eq. \ref{eq:
 
 Optimal values for the minimum grid spacing $\Delta_\textrm{min}$ and the tolerance $\delta_\textrm{min}$ were found for a test case for each type of data in two steps. First, the grid spacing $\Delta_\textrm{min}$ was varied at the lowest tolerance considered ($\delta_\textrm{min}=$ 0.1 pixels) and an optimal grid spacing was identified. Second, in order to minimize computation times the tolerance $\delta_\textrm{min}$ was varied between 1.0 and 0.1 for the optimal grid spacing $\Delta_\textrm{min}$ selected in the previous step. The smallest tolerance beyond which no substantial improvement was apparent was identified. 
 
-MDR was implemented in IDL 6.4 (Exelis VIS, Boulder, CO) and run on a standard laptop PC with a 2.7GHz Intel Core processor and 16GB memory. All source code and data are freely available as supplementary material ({\bf ZENODO}). 
+MDR was implemented in IDL 6.4 (Exelis VIS, Boulder, CO) and run on a standard laptop PC with a 2.7GHz Intel Core processor and 16GB memory. 
 
 \subsection{Data and simulations}
 

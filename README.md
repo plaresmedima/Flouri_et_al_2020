@@ -7,7 +7,7 @@ The repository contains a preprint of the manuscript (in pdf and LaTeX format) a
 
 The data that are accessed by the code are released on Zenodo (DOI) and are derived from two retrospective datasets:
 
-- A series of [2D DICOM data](https://doi.org/10.25405/data.ncl.13180328) provided by Pete Thelwall et al (Newcastle).
+- A series of [2D DICOM data](https://doi.org/10.25405/data.ncl.13180328) provided by Pete Thelwall et al (Newcastle University).
 - A series of 3D DICOM data provided by Kalra et al (Manchester University)
 
 **Code**

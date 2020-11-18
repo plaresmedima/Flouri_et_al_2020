@@ -5,7 +5,7 @@ The repository contains a preprint of the manuscript (in pdf and LaTeX format) a
 
 **Data*
 
-The data that are accessed by the code are released on Zenodo (DOI) and are derived from tow retrospective datasets:
+The data that are accessed by the code are released on Zenodo (DOI) and are derived from two retrospective datasets:
 
 - A series of [2D DICOM data](https://doi.org/10.25405/data.ncl.13180328) provided by Pete Thelwall et al (Newcastle).
 
@@ -13,6 +13,6 @@ The data that are accessed by the code are released on Zenodo (DOI) and are deri
 
 **Code*
 
-The code is written in IDL and requires IDL version 6.3 or up to run. Set the path where the data are stored and where the results need to be saved in the file MDR_PATH.pro, and then compile and run __MAIN_MDR.pro making sure to set the IDL search path to the top folder "Code".
+The code is written in IDL and requires IDL version 6.3 or higher to run. Set the path where the data are stored and where the results need to be saved in the file MDR_PATH.pro, and then compile and run __MAIN_MDR.pro making sure to set the IDL search path to the top folder "Code".
 
  

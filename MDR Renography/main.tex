@@ -1,0 +1,582 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% A template for Wiley article submissions.
+% Developed by Overleaf. 
+%
+% Please note that whilst this template provides a 
+% preview of the typeset manuscript for submission, it 
+% will not necessarily be the final publication layout.
+%
+% Usage notes:
+% The "blind" option will make anonymous all author, affiliation, correspondence and funding information.
+% Use "num-refs" option for numerical citation and references style.
+% Use "alpha-refs" option for author-year citation and references style.
+
+\documentclass[num-refs]{wiley-article}
+% \documentclass[blind,alpha-refs]{wiley-article}
+
+\AtBeginEnvironment{abstract}{\newpage\normalmarginpar}
+\makeatletter
+\patchcmd{\env@wiley@abstract@process}
+{\begin{adjustwidth*}{\dimexpr 54.9mm-6.5\p@}{}}
+	{\begin{adjustwidth*}{}{\dimexpr 54.9mm-6.5\p@}}
+		{}{\PackageWarning{foo}{bar}}
+		\preto{\wiley@affilmetadata}{\linespread{1}}
+		\makeatother
+
+% Add additional packages here if required
+\usepackage{siunitx}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{lscape}
+\usepackage{amsmath}
+\usepackage{gensymb}
+\usepackage{multirow}
+
+\newcommand{\x}{{\bf x}}
+\newcommand{\D}{{\bf D}}
+\newcommand{\Pb}{{\bf P}}
+\newcommand{\pb}{{\bf p}}
+\newcommand{\Sb}{{\bf S}}
+\newcommand{\ca}{c_a}
+
+% Update article type if known
+\papertype{Original Article}
+% Include section in journal if known, otherwise delete
+\paperfield{Journal Section}
+
+\title{Motion correction of free-breathing magnetic resonance renography using model-driven registration}
+
+% List abbreviations here, if any. Please note that it is preferred that abbreviations be defined at the first instance they appear in the text, rather than creating an abbreviations list.
+%\abbrevs{ABC, a black cat; DEF, doesn't ever fret; GHI, goes home immediately.}
+
+% Include full author names and degrees, when required by the journal.
+% Use the \authfn to add symbols for additional footnotes and present addresses, if any. Usually start with 1 for notes about author contributions; then continuing with 2 etc if any author has a different present address.
+\author[1,2,3,4]{Dimitra Flouri}
+\author[1]{Daniel Lesnic}
+\author[5]{Constantina Chrysochou}
+\author[6, 7]{Jehill Parikh}
+\author[6, 7]{Peter Thelwall}
+\author[6]{Neil Sheerin}
+\author[5]{Philip A Kalra}
+\author[2]{David L Buckley} 
+\author[2,8]{Steven P Sourbron}
+
+% Include full affiliation details for all authors
+
+\affil[1]{Department of Applied Mathematics, University of Leeds, UK}
+\affil[2]{Department of Biomedical Imaging Sciences, University of Leeds, UK}
+\affil[3]{School of Biomedical Engineering and Imaging Sciences, Kings College London, UK}
+\affil[4]{Department of Medical Physics and Biomedical Engineering, University College London, UK}
+\affil[5]{Department of Renal Medicine, Salford Royal National Health Service Foundation Trust, UK}
+\affil[6]{Translational and Clinical Research Institute, Newcastle University, UK}
+\affil[7]{Newcastle Magnetic Resonance Centre, Campus for Ageing and Vitality, University of Newcastle, UK}
+\affil[8]{Department of Infection, Immunity and Cardiovascular Disease, University of Sheffield, UK}
+
+\corraddress{Dimitra Flouri, School of Biomedical Engineering and Imaging Sciences, Kings College London, London, United Kingdom}
+\corremail{dimitra.flouri@kcl.ac.uk}
+
+
+\fundinginfo{EPSRC-GSK Case Studentship, Grant/Award Number: EP/K503071/1, Kidney Research UK,  Grant/Award Number:  RP55/2012 and Wellcome Trust,  Grant/Award Number: 210182/Z/18/Z. }
+
+% Include the name of the author that should appear in the running header
+\runningauthor{Dimitra Flouri et al.}
+
+\begin{document}
+
+\maketitle
+
+
+\begin{abstract}
+	{\bf{Purpose:}} Model-driven registration (MDR) is a general approach to remove patient motion in quantitative imaging. The aim of this study is to investigate whether MDR can effectively correct the motion in free-breathing MR renography (MRR).
+	
+	\noindent{\bf{Methods:}} MDR was generalised to linear tracer-kinetic models and implemented using 2D or 3D free-form deformations (FFD) with multi-resolution, gradient descent optimization. MDR was evaluated on a standard laptop PC using a kidney-mimicking digital reference object (DRO) and free-breathing patient data acquired at high temporal resolution in multi-slice 2D (5 patients) and 3D acquisitions (8 patients). Registration accuracy was assessed using comparison to ground truth (DRO) and visual evaluation of dynamic images, time courses and parametric maps (all data).
+	
+	\noindent{\bf{Results:}} DRO data showed that the bias and precision of parameter maps after MDR is indistinguishable from motion-free data. Visual inspection showed that MDR effectively removed motion effects in the dynamic data, leading to a clear improvement in anatomical delineation on parametric maps and a reduction in motion-induced oscillations on signal-time courses. 
+	
+	\noindent{\bf{Conclusion:}} MDR provides accurate motion correction of MRR in synthetic and patient data. Considering free-breathing MRR is among the most challenging applications for motion correction, MDR is a suitable candidate for a standard in motion correction for quantitative imaging.
+	
+	% Please include a maximum of seven keywords
+	\keywords{Model-driven registration, motion correction, image registration, free-form deformation, quantitative imaging, magnetic resonance renography, dynamic contrast-enhanced MRI.}
+	
+\end{abstract}
+
+\section{Introduction}
+Quantitative imaging biomarkers are measured by acquiring images with different acquisition parameters, and fitting a physical model of the ensuing signal changes to these data. For body areas like the abdomen and thorax, motion correction is often necessary to avoid significant artefacts in the parametric maps. However, standard pairwise image co-registrations between the images in the series \cite{Rueckert1999, Martel2007} is often ineffective in quantitative imaging due to the large changes in image contrast. 
+
+The problem can be solved by generating a synthetic motion-free series of images from the data, and using that as a target for image co-registration. Two different classes of methods have been proposed in this context: (1) {\it Model-free registration} methods generate synthetic targets using signal-processing concepts such as principal component analysis \cite{Melbourne2007, Milles2008, Wollny2012, Hamy2014, Feng2016, Huizinga2016, Zhang2018, CollFont2020}; (2) {\it Model-driven registration (MDR)} methods generate synthetic targets by fitting the physical signal model itself to the data \cite{Hayton1997}. Both classes typically iterate the process of synthetic target generation and image co-registration until convergence.
+
+The attraction of model-free registration lies in the fact that the same algorithm can be applied to any quantitative imaging method, and the results are not affected by biases in the physical signal model \cite{Schnabel2016}. On the other hand, motion correction is not an aim in itself in quantitative imaging, but part of a processing pipeline that will ultimately always apply a signal model. Hence in this context, model-free registration imposes additional constraints that may bias the solution unnecessarily. For instance, the assumption that breathing does not affect the principal components of a signal is not necessarily true. In particular, this may be the case when data are acquired rapidly in free-breathing and motion creates a large periodic oscillation on the signal. 
+
+MDR does not impose additional assumptions beyond those implicit in the physical signal model, and may therefore be a more suitable motion-correction approach in quantitative imaging \cite{Flouri2020}. Evidence shows that MDR performs well in a wide range of application areas, but the majority of these involve data with relatively small amounts of motion, such as breast \cite{Hayton1997} and brain \cite{Mirzaalian2012, Jiao2014, Ramos-Llorden2017} (immobilised by dedicated coils), ECG-triggered cardiac or abdominal data in breath hold \cite{Adluru2006, Buonaccorsi2006, Buonaccorsi2007, Xue2012, VanDeGiessen2013, Likhite2015, Tilborghs2019} or lower abdomen \cite{Bhushan2011, Enescu2014, Hallack2014} (limited bulk motion and peristalsis suppressed with antispasmodics \cite{Jhaveri2015}). Only two studies so far have applied MDR in free-breathing \cite{Kurugol2017, Flouri2020}, both on abdominal diffusion-weighted MRI which is characterized by large changes in intensity but limited contrast variations. 
+
+Free-breathing magnetic resonance renography (MRR) \cite{Basak2019}, or dynamic contrast-enhanced MRI (DCE-MRI) of the kidney, exhibits a combination of characteristics that present extremely challenging conditions for motion correction. This includes major reversals in image contrast and large motion amplitudes compared to the internal structures of the target organ. As a result, and despite intensive research in the area, a sufficiently robust motion-correction approach for MRR has not yet been identified \cite{Zollner2020}. 
+
+The aim of this study was to investigate whether MDR is a suitable approach to correct for breathing motion in high-temporal resolution MRR acquired under free breathing. The standard formulation of MDR was generalised to cover this type of problem, and MDR was evaluated on a kidney-mimicking digital reference object (DRO), as well as on patient data using multi-slice 2D and 3D acquisitions. The algorithm, DRO and patient data are freely available as supplementary material to allow independent verification of the conclusions and serve as benchmarks for future developments in motion correction.
+
+\section{Methods}
+
+\subsection{Theory}
+
+This section introduces basic theory and notations, and generalises conventional MDR for application to MRR with linearised kinetic models. The theory is introduced in the most general context possible to allow transfer of experience to other applications of quantitative imaging and DCE-MRI.
+
+\subsubsection{DCE-MRI signal model}
+
+The basic approach to modelling of MRR is well-known \cite{Basak2019} and follows standard principles of DCE-MRI, but some of the usual distinctions are irrelevant for the purposes of motion correction. We repeat here the main definitions in order to unambiguously fix notations and assumptions. 
+
+DCE-MRI measures $S(\x, t)$ in location $\x$ as a function of time $t$ after injection of a contrast agent. For the purposes of this study, we will assume that tissue concentrations are small enough so that $S(\x, t)$ is approximately linear in the concentration:
+\begin{equation}\label{eq:DCEsignal}
+S(\x, t) = S_0(\x) + \rho(\x)C(\x, t)
+\end{equation}
+Here $\rho(\x) = r_1 S_0(\x)T_{10}(\x)$ depends on the relaxivity $r_1$ of the contrast agent, the precontrast relaxation time $T_{10}$ and on the precontrast signal $S_0$. We will also assume that the tracer distributes over at most two distinct compartments with a global input function $\ca(t)$. In that case $C(\x, t)$ is a convolution of $\ca(t)$ with a bi-exponential:
+\begin{equation}
+\label{eq:C}
+C(\x, t)=\sum_{i=1}^2 F_i(\x)e^{-t/T_i(\x)} \otimes \ca(t)
+\end{equation}
+Here $F_i(\x)$ and $T_i(\x)$ are four unknown parameter fields. The model is easily generalised to more complex systems by adding terms in the sum, one for each compartment \cite{Sourbron2012, Jiao2014}. Inserting Eq. (\ref{eq:C}) into Eq. (\ref{eq:DCEsignal}) provides the main model equation for two-compartmental DCE-MRI:
+\begin{equation}\label{eq:DCEmodel}
+S(\x, t) 
+= S_0(\x) + \sum_{i=1}^2 F_i(\x)e^{-t/T_i(\x)} \otimes \ca(t)
+\end{equation}
+Here we absorbed the calibration map $\rho(\x)$ into a redefinition $F_i\to\rho F_i$, as the parameter interpretation is not relevant for motion correction purposes. 
+
+In order to avoid a dependence on initial values and speed up model fitting, a linear formulation of the two-compartment model can also be used \cite{Flouri2016}:
+\begin{equation}
+\label{eq:C_linear}
+C(\x, t)=\sum_{i=1}^2 \Big( \alpha_i(\x) C^{(i)}(\x, t)+\beta_i(\x)\ca^{(i)} (t)\Big) .
+\end{equation}
+Here the superscripts `(1)' and `(2)' refer to single- and double integration over time, respectively. The unknown model parameters are the four fields $\alpha_i(\x)$ and $ \beta_i(\x)$, which are directly related to the four parameters $F_i(\x)$ and $T_i(\x)$ \cite{Flouri2016}. Inserting Eq. (\ref{eq:C_linear}) into Eq. (\ref{eq:DCEsignal}) leads to the signal model for linear DCE-MRI:
+\begin{eqnarray}
+\label{eq:DCEmodel_linear}
+S(\x, t) = 
+S_0(\x) + \sum^2_{i=1}  \Big(\alpha_i(\x) (S(\x, t) - S_0(\x))^{(i)}+\beta_i(\x) \ca^{(i)}(t)\Big)
+\end{eqnarray}
+As above we absorbed $\rho(\x)$ into a redefinition $\beta_i\to\rho\beta_i$. 
+
+\subsubsection{Free-form deformation model (FFD)}
+
+Consider a set of images $S(\x, t)$ acquired at different times $t$ and corrupted by motion. If motion is modelled by a coordinate transformation $\x\to\D(\x,t)$ at each time point $t$ (the deformation field at $t$), then motion-free images $S_\D(\x, t)$ can be derived as:
+\begin{equation}\label{eq:moco}
+S_\D(\x, t) = S(\D(\x,t), t) 
+\end{equation}
+We are free to define which is considered the motion-free state $\D(\x,t_f) = \x$. In a free-breathing protocol it is convenient to choose $t_f$ in end-expiration as this typically covers the largest part of a breathing cycle.
+
+The breathing motion in this study is modelled with free-form deformations (FFD) \cite{Rueckert1999}. The deformation field $\D(\x, t)$ is defined at any $\x$ by interpolating vectors $\D_j(t) = \D(\x_j, t)$ on a rectangular grid of control points $\x_j$ with grid spacing $\Delta = (\Delta_x, \Delta_y, \Delta_z)$:
+\begin{equation}
+\label{eq:D}
+\D(\x,t) = \sum_j W^{\Delta}_j(\x)\D_j(t)
+\end{equation}
+In this study we use linear interpolation to speed up the computations, in which case the weighting functions $W^\Delta_j(\x) = W^\Delta(\x-\x_j)$ are defined as:
+\begin{equation}\label{eq:weighting}
+W^\Delta(x, y, z) = w(x/\Delta_x)w(y/\Delta_y)w(z/\Delta_z),
+\end{equation}
+with $w(u) = 1-|u|$ for $|u|\leq 1$ and $w(u) = 0$ otherwise. The coordinate transformation (Eq. \ref{eq:moco}) is applied by interpolating the images between the values $S_l(t) = S(\x_l, t)$ at voxel centres $\x_l$. If the voxel dimensions are $\delta$, the signal at any location $\x$ is given by:
+\begin{equation}
+\label{eq:hat_S}
+S (\x, t) = \sum_l W^{\delta}_l(\x)S_l(t)
+\end{equation}
+The deformed image (Eq. \ref{eq:moco}) can then be parametrized in terms of $\D_j(t)$ by substituting $\x\to \D(\x,t)$ in the right hand side of Eq. \ref{eq:hat_S} and using Eq. \ref{eq:D}:
+\begin{equation}
+\label{eq:explicit}
+S_\D(\x, t) = \sum_l W^{\delta}_l\left(\D (\x, t)\right)S_l(t)
+\end{equation}
+
+\subsubsection{Standard MDR (fixed target)}
+
+Consider an arbitrary quantitative imaging method where signals $S(\x, t)$ are measured at locations $\x$ and at times $t$ with different signal parameters $\pb (t)$. Depending on modality, $\pb $ can represent time points directly (e.g. DCE-MRI or Dynamic PET), b-values and gradient directions (diffusion MRI), inversion- or echo times (MRI relaxometry), phase-encoding directions (4D Flow), etc. 
+
+Standard MDR assumes there exists a signal model $\Sigma (\Pb(\x), \pb)$ that describes motion-free images in terms of $N$ unknown parameter maps $\Pb(\x) = (P_1(\x),...,P_N(\x))$:
+\begin{equation}\label{eq:mdr std}
+S_\D(\x, t) = \Sigma(\Pb(\x), \pb (t))  
+\end{equation}
+The left-hand side is here the motion corrected image as defined in Eq. \ref{eq:moco}. Eq. \ref{eq:mdr std} is the defining equation of standard MDR, providing a direct link between deformation fields $\D(\x,t)$ and parameter maps $\Pb(\x)$.
+
+Eq. \ref{eq:mdr std} is solved by initialising $\D(\x, t)=\x$ and iterating the following two steps until convergence: (1) solve for $\Pb$ at fixed $\D$; (2) solve for $\D$ at fixed $\Pb$. This breaks up the problem in a series of smaller problems that can be addressed with existing methods: solving for $\Pb$ at fixed $\D$ amounts to fitting the signal model to a series of images $S_\D(\x, t)$; solving for $\D$ at fixed $\Pb$ presents a standard pairwise image co-registration problem for each $t$ that can be solved with common software packages.
+
+While image co-registration generally requires normalised cost functions to account for differences in contrast and intensity between source and target, in MDR a least-squares cost function can be used because the source images $S_\D(\x, t)$ and target images $\Sigma(\Pb(\x), \pb (t))$ have similar intensity and contrast. Since the physical signal models are typically also solved in the least squares sense, this allows us to formulate MDR as a joint optimization problem:
+\begin{equation}\label{eq:mdr std cost}
+\chi^2(\D,\Pb)=\frac{1}{2}\sum_{\x, t}(S_\D(\x, t) - \Sigma(\Pb(\x), \pb (t)) )^2 
+\end{equation}
+Since both steps of the iteration then optimize the same cost function, convergence is guaranteed. The use of a least squares cost function also offers a significant computational advantage because it affords an analytical expression for the partial derivatives $\mathbf{G}_j(t)$ of the cost function with respect to each $\D_j(t)$ \cite{Sorzano2005}:  
+\begin{equation}\label{eq:gradient}
+\mathbf{G}_j(t)
+= \sum_{\x\in {\cal N}_j}  W_j^{\Delta}(\x) R(\x, t) (\nabla S)_\D(\x,t)
+\end{equation}
+Here $(\nabla S)_\D$ is the FFD of the image gradient $\nabla S$, $R(\x, t)$ is the residual $S_\D(\x, t) - \Sigma(\Pb(\x), \pb (t))$, and ${\cal N}_j$ is the support of the wavelet $W^\Delta_j(\x)$ (Eq. \ref{eq:weighting}).
+
+Eq. \ref{eq:gradient} can be computed efficiently. The weights $W_j(\x)$ only depend on the resolution level $\Delta$ and can be precomputed for each control point $j$. The product $R(\x, t)$ $(\nabla S)_\D(\x, t)$ needs to be computed only once for all control points $j$, and the summation over $\x$ can be restricted to a small neighbourhood ${\cal N}_j$ around each control point $j$ (Eq. \ref{eq:weighting}).
+
+\subsubsection{Generalised MDR (moving target)}
+
+A hidden assumption in the formulation of standard MDR is that the signal model $\Sigma(\Pb(\x), \pb)$ is not a function of the measured signals $S(\x,\pb)$ themselves. In general, however, this is not necessarily the case. 
+
+Consider the example of the DCE-MRI model in Eq. \ref{eq:DCEmodel}. If $S_0(\x)$ is treated as an unknown model parameter then Eq. \ref{eq:DCEmodel} defines a 5-parameter model $\Sigma(S_0(\x), F_i(\x), T_i(\x), t)$ and the assumptions of standard MDR are fulfilled. In practice, however, nearly all current implementations of DCE-MRI derive $S_0(\x)$ from the data by averaging the precontrast signals $S(\x,1), ..., S(\x,n_0)$. In that case $\Sigma(S(\x,1:n_0), F_i(\x), T_i(\x), t)$ becomes a function of the signal at different times. This is also true when a linear implementation is used as in Eq. (\ref{eq:DCEmodel_linear}), which depends explicitly on $S(\x,t)$ even if $S_0(\x)$ is treated as a free parameter.
+
+The implications are significant. If the signal model depends on the signal itself then Eq. (\ref{eq:mdr std}) must be recast as follows (\footnote{We used the notation $S(\x,-)$ to indicate that the right-hand side can depend on signal values $S(\x,t)$ at any $t$.}):
+\begin{equation}\label{eq:mdr}
+S_\D(\x, t) = \Sigma(S_\D(\x,-),\Pb(\x), \pb (t))  
+\end{equation}
+Solving this equation for $\D$ at fixed $\Pb$ no longer presents a standard image co-registration problem because the right-hand side also depends on $\D$ - presenting effectively a moving target. An additional problem is that a deformation at any single time $t$ can now affect the equation at any other time $t'$. This implies that co-registrations at different times can no longer be treated as independent problems, and the problem requires a groupwise optimization of the cost function:
+\begin{equation}\label{eq:mdr cost}
+\chi^2(\D,\Pb)=\frac{1}{2}\sum_{\x, t}(S_\D(\x, t) - \Sigma(S_\D(\x,-),\Pb(\x), \pb (t)) )^2 
+\end{equation}
+
+As shown in the appendix, the gradient of the cost function (Eq. \ref{eq:mdr cost}) has the same form as the special case (Eq. \ref{eq:gradient}), after substituting a generalised residual $R(\x, t)\to {\cal R}(\x, t)$:
+\begin{equation}\label{eq:gen res}
+{\cal R}(\x, t) = \sum_s R(\x, s) (\partial_t R)(\x,s)
+\end{equation}
+We used the notation $(\partial_t R)(\x,s)$ for the partial derivative of the residual $R(\x, s)= S_\D(\x, s) - \Sigma(\Sb_\D(\x,-),\Pb(\x), \pb (s))$ with respect to $S_\D(\x, t)$. In the special case of Eq. (\ref{eq:mdr std cost}), we have $(\partial_t R)(\x,s)=\delta_{ts}$ so that ${\cal R}(\x, s)=R(\x, s)$. 
+
+The need for a groupwise optimization in generalized MDR comes with a significant computational overhead. However, in the case of DCE-MRI with a linear model (Eq. \ref{eq:DCEmodel_linear}) the assumption $(\partial_t R)(\x,s)\approx\delta_{ts}$ may well present a reasonable approximation to the exact gradient. Defining a matrix $\partial {\mathbf R}(\x)$ with elements $(\partial {\mathbf R})_{ts}(\x)=(\partial_t R)(\x,s)$, and writing ${\mathbf I}$ for the identity matrix, $\Delta t{\mathbf M} {\mathbf S}$ for numerical integration of ${\mathbf S}$ over time, and ${\mathbf M}_0 {\mathbf S} $ for the K-element vector $(S_0,...,S_0)^T$, we can write the partial derivative of the residual as:
+\begin{eqnarray}
+\label{eq:DCEmodel_linear discrete}
+\partial {\mathbf R}(\x)  = ({\mathbf I}-\epsilon_1(\x) {\mathbf M}-\epsilon_2^2(\x) {\mathbf M}^2)({\mathbf I}-{\mathbf M}_0)
+\end{eqnarray}
+where we used the definition of $\alpha_i$ and $\beta_i$ \cite{Flouri2016} to define:
+\begin{eqnarray}
+\epsilon_1(\x) = \frac{\Delta t}{T_1(\x)} + \frac{\Delta t}{T_2(\x)}
+\qquad\qquad
+\epsilon_2(\x) = \sqrt{\frac{\Delta t}{T_1(\x)} \frac{\Delta t}{T_2(\x)}}
+\end{eqnarray}
+
+In DCE-MRI the time step $\Delta t$ is always chosen to be significantly shorter than the mean transit times of the system, so that $\Delta t << T_1, T_2$ and therefore $\epsilon_1,\epsilon_2$ are small quantities. Since further the non-zero elements of the matrix ${\mathbf M}_0$ are $1/n_0$ (with $n_0 \sim 10-20$ the number of precontrast images) the approximation $\partial {\mathbf R} \approx {\mathbf I} $ may be justified. In that case the dependency on $\D$ of the right-hand side in Eq. (\ref{eq:mdr}) can be ignored and the equation can be solved in the same way as standard MDR. This approach has been adopted in the current study.
+
+\subsection{Implementation}
+
+MDR was implemented with the linear DCE-MRI signal model (Eq. \ref{eq:C_linear}). A multiresolution strategy was adopted where the deformation fields $\D_j(t)$ are initially determined over a coarse grid of control points with spacing $\Delta$ equal to the field of view. The solutions $\D_j(t)$ are then interpolated to initialise deformation vectors at a finer grid $\Delta \rightarrow \Delta/2$. This process is iterated until a user defined minimum grid spacing $\Delta_\textrm{min}$. Deformation fields at the lowest resolution were initialised to no deformation: $\D_j(t) = \x_j$. 
+
+At each fixed resolution level $\Delta$, the interpolation weights (Eq. \ref{eq:weighting}) were precomputed and the following two steps were iterated: (1) pixel-by-pixel linear least squares fitting of the four model parameters $\alpha_i(\x)$, $ \beta_i(\x)$ to the deformed images $S_\D(\x,t)$ \cite{Flouri2016}; (2) time-by-time fitting of the deformation parameters $\D_j(t)$ using gradient descent with a back-tracking line search and gradients calculated with Eq. \ref{eq:gradient}. The line searches were preconditioned by using the step size of the previous line search to initialise the next. The gradient descent was stopped if the line search returned a maximum change in $\D_j(t)$ less than a user-defined tolerance $\delta_\textrm{min}$. The iterations at a given resolution level were stopped if none of the time points produced a change larger than $\delta_\textrm{min}$.   
+
+Optimal values for the minimum grid spacing $\Delta_\textrm{min}$ and the tolerance $\delta_\textrm{min}$ were found for a test case for each type of data in two steps. First, the grid spacing $\Delta_\textrm{min}$ was varied at the lowest tolerance considered ($\delta_\textrm{min}=$ 0.1 pixels) and an optimal grid spacing was identified. Second, in order to minimize computation times the tolerance $\delta_\textrm{min}$ was varied between 1.0 and 0.1 for the optimal grid spacing $\Delta_\textrm{min}$ selected in the previous step. The smallest tolerance beyond which no substantial improvement was apparent was identified. 
+
+MDR was implemented in IDL 6.4 (Exelis VIS, Boulder, CO) and run on a standard laptop PC with a 2.7GHz Intel Core processor and 16GB memory. All source code and data are freely available as supplementary material ({\bf ZENODO}). 
+
+\subsection{Data and simulations}
+
+MDR was evaluated using a combination of 2D simulated data and patient data acquired in 2D and 3D. All patients provided written informed consent and the studies were approved by the local research ethics committees. The 3D data were coregistered with 3D MDR where $\D_j(t)$ has 3 independent components. 2D data were coregistered with 2D MDR.
+
+\subsubsection{Digital reference object (DRO)}
+
+A 2D DRO with kidney-like structures was used to generate motion-corrupted MRR images (120 dynamics, 1.1s intervals, matrix size $135\times135$). The ``kidneys'' were modelled as concentric ellipses with different values for the parameters $F_P$ and $T_T$ to model cortical-, medullary-, and pelvic structures. The parameter values in the different regions range from 30-300 mL/min/100mL (plasma flow $F_P$), 6-20 s (plasma mean transit time $T_P$), 40-60 mL/min/100mL (tubular flow $F_T$) and 90-300 s (tubular mean transit time $T_T$). A literature based $\ca(t)$ was used \cite{Parker2006}, prepadded with zeroes to create a 15 s baseline. Data were generated with Eq. \ref{eq:DCEmodel} and $S_0(\x)=1$ at pseudo-continuous temporal resolution 0.1 s, and then downsampled to 1.1 s. 
+
+Three different types of motion were applied: no motion, rigid motion through sinusoidal vertical shifts with amplitude $12$ pixels and period $4$ sec, and non-rigid motion derived from the deformation fields measured on a 2D clinical data set. The motion amplitudes were scaled up compared to the clinical data to test the performance of the approach under challenging conditions. The no-motion case is included to present a best-case scenario for MDR. Gaussian noise was added to the signal with varying standard deviations (SD) to test the noise sensitivity. Noise levels are expressed in terms of the contrast-to-noise ratio (CNR) defined as $\text{max}(\ca)/\text{SD}$. 
+
+A particular issue in the design of DRO's for motion correction is the choice of the ground truth. A result where the motion is frozen in a position that is different from that of the "ground truth" parameter maps is not necessarily incorrect as long as the frozen position is a natural breathing state. The problem is addressed in the DRO by applying the deformation fields to the "ground truth" parameter maps as well, and using as actual ground truth for error quantification the breathing state that minimises the difference between the reconstructed plasma flow and moving plasma flow map.
+
+\subsubsection{2D clinical data}
+
+2D MRR data were taken from five consecutive subjects enrolled in an ongoing study into MRI biomarkers of renal fibrosis. MRR was performed in free breathing using a 3.0 T scanner (Philips Achieva, Best, Netherlands) and a 2D saturation-recovery turbo-flash sequence with linear encoding of {\em k}-space. A 2-channel body transmit coil was employed for homogeneous signal transmission and data were acquired using an 18-channel torso receive coil. Four slices (3 coronal, 1 axial) were acquired at a temporal resolution of 1.1 s. Other imaging parameters were as follows: acquisition matrix 116 (phase) $\times$ 135 (read), number of dynamics 250, echo time 1.63 ms, repetition time 3.6 ms, bandwidth 900 Hz, saturation recovery time 148 ms, flip angle 12$^{\circ}$, slice thickness 7 mm, sensitivity encoding (SENSE) factor 2.4, field of view 375 $\times$ 440 mm$^2$, in-plane resolution 3.2 $\times$ 3.2 mm$^{2}$, reconstructed matrix 480 x 480. The contrast agent Gd-DOTA (Dotarem, Guerbet, France) was injected with a half dosage of 0.05 mmol/kg body weight. The input $\ca(t)$ was measured in the aorta on the axial slice. 
+
+\subsubsection{3D clinical data}
+
+3D MRR data were taken from eight consecutive cases from a study on atherosclerotic renovascular disease \cite{Lim2013}. MRR was performed using a 3.0 T whole body scanner (Philips Achieva, Philips Medical Systems) with a phased-array body coil for signal reception. Subjects were imaged using 3D spoiled gradient echo sequence in the oblique coronal plane. The following parameters were used for the acquisition: repetition time 5.0 ms, echo time 0.9 ms, field of view 400 $\times$ 400 $\times$ 100 mm, flip angle 17$^{\circ}$, SENSE factor 2, acquisition matrix 128 $\times$ 84 $\times$ 10, reconstructed matrix 128 $\times$ 128 $\times$ 20. This resulted in a temporal resolution of 2.1 s/volume. Subjects were given a quarter dose of 0.025 mmol/kg Gd-DOTA (Dotarem, Guerbet, France) at a rate of 3 ml/s. In all cases the acquisition and contrast agent injection were initiated simultaneously. The input $\ca(t)$ was measured in the aorta between the bifurcations of renal and iliac arteries.
+
+\subsection{Assessment of registration}
+
+Registration quality in the DRO was measured by the percent error in any given field $P(\x)$, quantifying the difference between the reconstructed $P_r(\x)$ and the ground truth $P(\x)$:
+\begin{equation}
+E_P(\x) =  \frac{P_r(\x) -P(\x)}{\underset{\x} \max \{P(\x)\}} \times 100
+\end{equation}
+Bias of the result was quantified as the median $E_P(\x)$ across all $\x$, and the precision as the width of the 90\% confidence interval. In addition to the quantitative metrics, registration quality was also assessed visually by comparing reconstructed parameter maps against exact maps $P(\x)$. 
+
+The registration quality in the patient data was assessed qualitatively by visual comparison of corrected and uncorrected parameter maps, time curves and model fits in motion-sensitive areas, and time-cut images.
+
+In order to assess the impact of model-bias, MDR was also applied with a simplified 3-parameter extended Tofts kinetic model \cite{Tofts1999}. The model is known to provide a poor fit to the data in the first pass, which introduces bias in the motion correction.
+
+\section{Results}
+
+Figure 1 illustrates the source data used in the study. The 3D data showed significant intra-frame artefacts, presenting a particular challenge for motion-correction.
+
+Figure 2 shows the effect of varying the deformation field gridsize $\Delta_\textrm{min}$ on the parameter maps. For the patient data, the $F_P$ maps show a gradual sharpening of the image until the smallest gridsize, but $F_T$ maps show that at the smallest gridsizes of $4$ and $8$ pixels small-scale deformations are induced that degrade the expected anatomical structure. Inspection of the dynamics suggest that at this stage the deformation field attempts to correct for model errors. The optimal gridsize for these data was chosen to 32 pixels (dashed lines) as no obvious further improvements are seen at 16. For the DRO, results improve when the gridsize is reduced to 32 but no further improvements are seen beyond that. The effect of model-bias does not play a role in the DRO because forward and inverse models were the same. 
+
+Figure 3 shows the effect of varying the tolerance $\delta_\textrm{min}$. The patient data show that the results gradually converge to the result at the lowest tolerance of 0.1, at the cost of significant extra calculation time. With tolerances lower than 0.3 the calculation time increases dramatically from 67 min at 0.3 pixels to 88 min at 0.2 pixels and 489 min at 0.1 pixels. As there is no obvious improvement visible at tolerances lower than 0.3, this was chosen to be the optimal tolerance for these data - saving around 6 hours of computation time per slice compared to the lowest tolerance of 0.1. The DRO shows a similar trend, but due to the sharp tissue interfaces, improvements continue to be apparent until a tolerance of 0.2 pixels.
+
+Figure 4 illustrates the results of MDR on the simulated data and a single clinical example. Comparison to the uncorrected data in Figure 1 shows that the algorithm removes the motion effectively, including the exaggerated motion in the DRO.
+
+Figure 5 illustrates the effect of motion correction on temporal profiles, model fits and parameter maps for simulated- and patient data. In all cases the time curves show strong breathing-induced oscillations that are substantially reduced after motion correction, leading to a much improved fit of the model to the data. In simulated and 2D data the model describes the motion-corrected data almost exactly. In the 3D data, some oscillations remain after coregistration, consistent with the effects of within-frame motion artefacts. On the parameter maps, registration significantly reduces the motion-induced blurring that is visible on the uncorrected maps. This leads to clearer organ boundaries and delineation of internal anatomical structures such as renal cortex and medulla.
+
+Figure 6 shows the effect of registration through time cuts in all five 2D datasets. The time cuts of the unregistered data clearly show that significant motion is present which varies in structure and amplitude between subjects. The registered data demonstrate that the motion has effectively been removed, without affecting the changes in contrast. Typical calculation times for a single 2D slice were around 40 min on a laptop PC.
+
+Figure 7 shows the effect of registration through time cuts in all eight 3D datasets. Motion correction in the 3D data is more challenging due to the appearance of significant within-frame motion artefacts, which cannot be removed by image co-registration. Nevertheless the time-cuts clearly indicate effective reduction of motion-effects. Visual inspection of the dynamic data demonstrates that kidney motion is effectively frozen and any residual breathing-related oscillations are due to the within-frame artefacts. For all 3D data, the grid size was set to 4 pixels and tolerance to 0.2, leading to a calculation time of about 14 hours on a laptop PC.
+
+Figure 8 shows the error distribution as measured on the DRO before and after MDR, with CNRs ranging from high to low noise levels. The results in the motion-free case show that MDR does not reduce bias and precision, and in fact improves the precision (width of 90\% CI) at high noise levels due to the spatial smoothing effect of the coordinate transformation. Comparing the results without MDR in the presence of rigid and non-rigid motion to the motion-free case, the figure shows that the motion induces additional error - mainly in the form of reduced precision under low noise conditions. At high noise conditions the error is fully dominated by noise with no obvious added contribution of motion. After MDR the error in data with rigid- and non-rigid motion is reduced and becomes indistinguishable from that measured in motion-free data.
+
+Figure 9 illustrates the effect of bias in the signal model. The modified Tofts model assumes infinite flow and therefore provides a poor fit to the earlier time points during the first pass of the contrast agent. As a result, the target for co-registration is a poor match to the actual image in the first pass, resulting in co-registration errors. This is illustrated in the figure: at the times corresponding to the first pass ({\it t}$_{20}$,{\it t}$_{24}$,{\it t}$_{25}$ in the simulated data and {\it t}$_{37}$-{\it t}$_{39}$ in patient data) the co-registered images are deformed. 
+
+\section{Discussion}
+
+The aim of this study was to investigate if MDR was suitable for motion correction in the challenging application area of free-breathing MRR at high temporal resolution. Results in synthetic and patient data have shown that MDR effectively removes the motion in calculation times that are feasible on standard laptop computers. The FFD algorithm as implemented in this study does not in any way bias the method to particular application areas, and should be applicable to other applications in quantitative imaging after replacing the signal model. 
+
+MDR suffers from bias in cases where the chosen signal model does not adequately describe the data. Our results have confirmed this effect, showing significant unphysical deformations when an oversimplified model is used. The motion correction, when performed at small enough grid spacing, will in those conditions attempt to correct for errors in the signal model by collapsing or deforming areas of the image where the signal model does not fit the data. In qualitative imaging applications, MDR may therefore not be a preferred approach to motion correction \cite{Schnabel2016}. However, in quantitative imaging a model-error will always bias the results, and this problem is not resolved by eliminating it from the motion-correction process. In fact, as our results show, the ensuing unphysical deformations help to flag up the presence of model error, where this may not be immediately obvious from a goodness-of-fit. 
+
+We used a FFD model for the breathing motion, as this is very generally applicable, can be easily adapted to motion at different scales by changing the smallest grid spacing, and is comparatively efficient computationally. However, other motion models may be used and could offer a benefit. For instance, a number of recent studies using MDR applied diffeomorphic transformations \cite{Bhushan2011, Hallack2014}, which are also free-form but derive deformations from stationary velocity fields. This ensures that the ensuing deformations are invertible, which is a necessary condition of any physical deformations. Diffeomorphic registrations will help to avoid unphysical deformations, producing more physical results even in the presence of model bias. This may be suitable in scenarios where an accurate physical model is not available, or would be underdetermined by the available data.
+
+In this study we chose to use a newly built implementation of MDR without using prepackaged solutions. For prototyping this has the advantage of transparency, allowing a dissection of the different components, identification and precomputation of repeated calculation steps, and easy evaluation of alternative algorithm architectures. However, this also implies there is significant scope for acceleration using well-known recipes such as stochastic gradients, preconditioner estimations for the line search \cite{Qiao2019}, or optimizing at reduced resolution. Coregistrations at different times can be parallellized, and well-optimized CPU-type implementations of FFD can be used \cite{Modat2010}. More generic registration packages such as Elastix \cite{Klein2010} and ANTs \cite{Tustison2013} can easily be integrated to evaluate alternative approaches. Machine learning may also lead to step changes in computation times \cite{Lv2018} and can presumably be implemented using unsupervised neural networks \cite{Vos2019}. 
+
+A separate potential route for improvement could involve a groupwise approach with the exact Eq. \ref{eq:gen res} rather than the approximation $(\partial_t R)(\x,s)=\delta_{ts}$. This was explored in preliminary experiments and abandoned after these demonstrated extremely slow convergence without obvious benefit. Nevertheless, the approach has not been evaluated systematically and can be potentially be improved using strategies such as joint optimization of deformation fields and parameter maps. The alternative approach of using the analytical model solution (Eq. \ref{eq:DCEmodel}), which fulfills the condition $(\partial_t R)(\x,s)=\delta_{ts}$, was also explored. The approach was abandoned after preliminary experiments demonstrated salt-and-pepper noise that dominated the cost function in the coregistration step. However, potential solutions such as improved non-linear optimization or denoising have not been explored.
+
+While the focus of this study is on retrospective motion correction by image registration, this is not the only means of correcting or reducing motion in medical imaging. Other approaches include prospective or retrospective gating, breath holding, using k-space trajectories that less motion-sensitive \cite{Ippoliti2019}, or a combination of the above \cite{CollFont2020}. These methods can be combined with MDR, and there may also be a benefit in integrating MDR with image reconstruction to produce a joint model-driven reconstruction \cite{Dikaios2014, Guo2017} and motion correction.
+
+The efficacy in MRR presents some confidence that MDR will generalise to other contrast mechanisms. Compared to most other techniques, free-breathing MRR presents challenging conditions for motion correction: (1) large reversals in image contrast due to the high cortical perfusion and the concentrating effect of the medulla; (2) large breathing-related displacements on the scale of the organ itself and significantly larger than the internal structures of interest; (3) complex spatiotemporal breathing motion combined with the presence of large, static structures in the field of view; (4) large motion-induced signal changes that fully dominate contrast agent-induced signal changes around tissue interfaces; (5) significant intra-frame breathing artefacts in 3D that cannot be modelled in image space; (6) model bias due to the complex contrast agent kinetics that are not currently modelled exactly; (7) the need for approximate solutions to avoid groupwise coregistration; and (8) significant computational challenge due to the large quantity of time points.  
+
+\section{Conclusion}
+MDR provides accurate motion correction in practically feasible computation times in the challenging application of free-breathing MRR at high temporal resolution. Considering the FFD motion model applies in any body area and the DCE-MRI signal model can be substituted by models for other contrast mechanisms, MDR is a promising candidate for a future standard in motion correction for quantitative imaging.
+
+
+\section{Appendix}
+We provide more detailed proof of Eq. \ref{eq:gen res} to calculate the partial derivative of the cost function with respect to $\D_j(k)$. First, we show that the partial derivative of the deformed signal is given by: 
+\begin{equation}
+\label{eq:grad}
+\frac {\partial S_\D(\x, t)}{\partial \D_j(t) }=W^{\Delta}_j(\x) (\nabla S)(\D (\x,t), t)
+\end{equation}
+This can be proven using Eq. \ref{eq:explicit}). Consider for instance the derivative with respect to the $x$-component $D_{x,j}(t)$ of $\D_j(t)$, using Eq. \ref{eq:D} for $\D(\x, t)$:
+\begin{equation*}
+\begin{split}
+\frac{\partial S_{\bf D}(\x, t)}{\partial D_{x,j}(t)} 
+& =\sum_l  \frac{\partial W_l^{\delta}}{\partial x}\Big( \D (\x, t)\Big)  \frac{\partial D_x(\x, t)}{\partial D_{x,j}(t)} S_l(t) \\
+&= \sum_l \frac{\partial W_l^{\delta}}{\partial x}\Big( \D (\x, t)\Big) W_j^{\Delta}(\x) S_l(t)\\
+& =  W_j^{\Delta}(\x) \sum_l  \frac{\partial W_l^{\delta}}{\partial x}\Big( \D (\x, t)\Big) S_l(t)\\
+& =  W_j^{\Delta}(\x) \frac{\partial S}{\partial x}\Big(\D (\x, t),t\Big)
+\end{split}
+\end{equation*}
+Now we calculate the partial derivative of the cost function (Eq. \ref{eq:mdr cost}): 
+\begin{eqnarray*} 
+	\frac{\partial \chi^2}{\partial \D_j(t)} 
+	&=& \sum_s\sum_\x R(\x, s)\frac{\partial R(\x,s)}{\partial \D_j(t)}  \\
+	&=& \sum_s\sum_\x R(\x, s) (\partial_t R)(\x,s) \frac{\partial S_{\bf D}(\x, t)}{\partial \D_j(t)} \\
+	&=& \sum_s\sum_\x R(\x, s) (\partial_t R)(\x,s) W_j^{\Delta}(\x) (\nabla S)_\D(\x,t) \\
+	&=& \sum_\x W_j^{\Delta}(\x) (\nabla S)_\D(\x,t) \sum_s R(\x, s) (\partial_t R)(\x, s)  \\
+	&=& \sum_\x W_j^{\Delta}(\x) (\nabla S)_\D(\x,t) {\cal R}(\x, t) \\
+\end{eqnarray*}
+We used Eq.\ref{eq:gen res} in the last line, which leads to Eq. \ref{eq:gradient} with the substitution $R\to {\cal R}$.
+
+
+\section*{Acknowledgements}
+This work was supported by a CASE studentship of the Engineering and Physical Sciences Research Council (EPSRC) and GlaxoSmithKline (GSK), by an investigator led project funded by GSK, and by Kidney Research UK. D.F. was also supported by the Wellcome Trust. The authors wish to thank Dr Andrew Melbourne for a critical reading of the manuscript.
+
+\section*{Figure Captions}
+
+\noindent Figure 1: Original time series before motion correction with frame indices: (a) DRO data with rigid motion; (b) DRO data with nonrigid motion; (c) 2D MRR data for subject 3; (d) 3D MRR data for subject 1.
+
+\noindent Figure 2: Selection of an optimal gridsize $\Delta_{min}$ for the example of 2D patient data (top rows) and DRO with non-rigid motion (bottom rows). All calculations are performed at the lowest tolerance of $\delta_{min}=$ 0.1 pixels. For each dataset the figure shows the results for plasma flow ($F_P$) and tubular flow ($F_T$) at different gridsizes from lowest (left, 4 pixels and 2 pixels, respectively) to highest (right, 256 pixels and 128 pixels, respectively). The unregistered result is shown in the right most column. For the DRO the ground truth is given on the left. Motion corrections are performed over the entire image, but results are cropped to the right kidney to show the detail. The dashed lines show the selected gridsize for each case. Dynamics, results for the other two parameters and error maps for the DRO are shown in the supplementary material.
+
+\noindent Figure 3: Selection of an optimal tolerance $\delta_{min}$ for the example of 2D patient data (top rows) and DRO with non-rigid motion (bottom rows). All calculations are performed at the optimal gridsize of 32 pixels (see Figure 2). For each dataset the figure shows the results for plasma flow ($F_P$) and tubular flow ($F_T$) at different tolerances from lowest (left, 0.1 pixels) to highest (right, 1 pixel). For the patient data, the calculation times for each tolerance level are also shown. Motion corrections are performed over the entire image, but results are cropped to the right kidney to show the detail. The dashed lines show the selected tolerance for each case. Dynamics, results for the other two parameters and error maps for the DRO are shown in the supplementary material.
+
+\noindent Figure 4:  Illustration of the effect of motion correction at different time points with layout exactly as in Figure 1. Time series after motion correction with frame indices: (a) DRO data with rigid motion; (b) DRO data with nonrigid motion; (c) 2D MRR data of subject 3; (d) 3D MRR data of subject 1. 
+
+\noindent Figure 5: Effect of registration in  (a) DRO data,  (b) 2D MRR of subject 3 and {\bf (c)} 3D MRR of subject 1. The plots show the signal-time curves (dashed-line) and the model fit (solid line) before and after motion correction. The plasma flow $(F_P)$ maps before and after motion correction are also presented.
+
+\noindent Figure 6: Effects of registration in superior-inferior direction in all 2D data sets. A sagittal view is presented for anatomical reference, with a dashed line to indicate the location of the time-cuts.
+
+\noindent Figure 7: Effects of registration in anterior-posterior direction in all patients. A sagittal view is included for anatomical reference, with a dashed line to indicate the location of the time-cuts.
+
+\noindent Figure 8: Error distribution before and after motion correction for the simulated data at CNR from 10$^0$ (high noise level) to 10$^4$ (low noise level). The columns show the two parameters and the rows show different motion types: no motion (top row), rigid motion (middle row), non-rigid motion (bottom row). The circles indicate the median relative parameter error for all the pixels in the image, and the error bars represent the 90\%  confidence intervals. For reasons of clarity, only two of the parameters are displayed; the trends in the other two parameters were similar.
+
+\noindent Figure 9: Illustration of the effect of motion correction at different time points using the modified-Tofts model (top row) and the two-compartment model (bottom row) for simulated data and patient data respectively. Arrows indicate areas of poor registration due to model-error.
+
+\begin{thebibliography}{55}
+	\bibitem{Rueckert1999}
+	D. Rueckert, L. I. Sonoda, C. Hayes, D. L. Hill, M. O. Leach, D. J. Hawkes, Nonrigid registration using free-form deformations: application to breast MR images, IEEE Transactions on Medical Imaging 18 (1999) 712--721.
+	\bibitem{Martel2007}
+	A. L. Martel, M. S. Froh, K. K. Brock, D. B. Plewes, D. C. Barber, Evaluating an optical-flow-based registration algorithm for contrast-enhanced
+	magnetic resonance imaging of the breast, Physics in medicine and biology 52 (2007) 3803--3816.
+	\bibitem{Melbourne2007}
+	A. Melbourne, D. Atkinson, M. J. White, D. Collins, M. Leach, D. Hawkes,
+	Registration of dynamic contrast-enhanced MRI using a progressive principal component registration (PPCR), Physics in medicine and biology 52 (2007) 5147--5156.
+	\bibitem{Milles2008}
+	Milles, R. J. van der Geest, M. Jerosch-Herold, J. H. C. Reiber, B. P. F. Lelieveldt, Fully Automated Motion Correction in First-Pass Myocardial
+	Perfusion MR Image Sequences, IEEE Transactions on Medical Imaging 27 (2008) 1611--1621 .
+	\bibitem{Wollny2012}
+	G. Wollny, P. Kellman, A. Santos, M. J. Ledesma-Carbayo, Automatic
+	motion compensation of free breathing acquired myocardial perfusion data by using independent component analysis , Medical Image Analysis 16 (2012) 1015-- 1028.
+	\bibitem{Hamy2014}
+	V. Hamy, N. Dikaios, S. Punwani, A. Melbourne, A. Latifoltojar,
+	J. Makanyanga, M. Chouhan, E. Helbren, A. Menys, S. Taylor, D. Atkinson, Respiratory motion correction in dynamic MRI using robust data decomposition registration Application to DCE-MRI, Medical Image Analysis 18 (2014) 301--313.
+	\bibitem{Feng2016}
+	Q. Feng, Y. Zhou, X. Li, Y. Mei, Z. Lu, Y. Zhang, Y. Feng, Y. Liu, W. Yang, W. Chen, Liver DCE-MRI registration in manifold space based on robust
+	principal component analysis, Scientific Reports (2016).
+	\bibitem{Huizinga2016}
+	W. Huizinga, D. H. Poot, J. M. Guyader, R. Klaassen, B. F. Coolen, M. VanKranenburg, R. J. Van Geuns, A. Uitterdijk, M. Polfliet, J. Vandemeulebroucke, A. Leemans, W. J. Niessen, S. Klein, PCA-based groupwise image registration for quantitative MRI, Medical Image Analysis 29 (2016) 65--78.
+	\bibitem{Zhang2018}
+	S. Zhang, T. T. Le, S. Kabus, B. Su, D. J. Hausenloy, S. A. Cook, C. W. L.
+	Chin, R. S. Tan, Cardiac magnetic resonance t1 and extracellular volume
+	mapping with motion correction and co-registration based on fast elastic image registration, Magma (New York, N.Y.) 31 (2018) 115--129.
+	\bibitem{CollFont2020}
+	J. Coll-Font, O. Afacan, J. S. Chow, R. S. Lee, A. Stemmer, S. K. Warfield,	S. Kurugol, Bulk motion-compensated DCE-MRI for functional imaging of
+	kidneys in newborns, Journal of magnetic resonance imaging  52 (2020) 207--216.
+	\bibitem{Hayton1997}
+	P. Hayton, M. Brady, L. Tarassenko, N. Moore, Analysis of dynamic mr
+	breast images using a model of contrast enhancement, Medical image analysis 1 (1997) 207--224.
+	\bibitem{Schnabel2016}
+	A. Schnabel, M. P. Heinrich, B. W. Papie, S. J. M. Brady, Advances and
+	challenges in deformable image registration: From image fusion to complex motion modelling, Medical image analysis  33 (2016) 145--148.
+	\bibitem{Flouri2020}
+	D. Flouri, D. Owen, R. Aughwane, N. Mufti, K. Maksym, M. Sokolska,
+	G. Kendall, A. Bainbridge, D. Atkinson, T. Vercauteren, S. Ourselin, A. L.
+	David, A. Melbourne, Improved fetal blood oxygenation and placental estimated measurements of diffusion-weighted MRI using data-driven bayesian modeling, Magnetic resonance in medicine 83 (2020) 2160--2172.
+	\bibitem{Mirzaalian2012}
+	H. Mirzaalian, A. Saad, G. Hamarneh, Iterative segmentation and motion
+	correction for dynamic PET images based on radioactive tracer kinetics, in: Proceedings of the Workshop on Mathematical Methods in Biomedical
+	Image Analysis, 2012.
+	\bibitem{Jiao2014}
+	J. Jiao, G. E. Searle, A. C. Tziortzi, C. A. Salinas, R. N. Gunn, J. A.
+	Schnabel, Spatio-temporal pharmacokinetic model based registration of 4D PET neuroimaging data, NeuroImage (2014) 225--235.
+	\bibitem{Ramos-Llorden2017}
+	G. Ramos-Llorden, A. J. Den Dekker, G. Van Steenkiste, B. Jeurissen, F. Vanhevel, J. Van Audekerke, M. Verhoye, J. Sijbers, A unified maximum
+	likelihood framework for simultaneous motion and T1 estimation in quantitative MR T1 mapping, IEEE Transactions on Medical Imaging (2017) 433--446.
+	\bibitem{Adluru2006}
+	G. Adluru, E. V. R. DiBella, M. C. Schabel, Model-based registration for
+	dynamic cardiac perfusion MRI, J Magn Reson Imaging 24 (2006) 1062--1070.
+	\bibitem{Buonaccorsi2006}
+	G. A. Buonaccorsi, C. Roberts, S. Cheung, Y. Watson, J. P. B. O’Connor,
+	K. Davies, A. Jackson, G. C. Jayson, G. J. M. Parker,	Comparison of the performance of tracer kinetic model-driven registration for dynamic
+	contrast enhanced MRI using different models of contrast enhancement, Academic radiology 13 (2006) 1112--1123.
+	\bibitem{Buonaccorsi2007}
+	G. A. Buonaccorsi, J. P. O’Connor, A. Caunce, C. Roberts, S. Cheung,
+	Y. Watson, K. Davies, L. Hope, A. Jackson, G. C. Jayson, G. J. Parker,
+	Tracer kinetic model-driven registration for dynamic contrast-enhanced
+	MRI time-series data, Magnetic Resonance in Medicine 58 (2007) 1010-- 562 1019.
+	\bibitem{Xue2012}
+	H. Xue, S. Shah, A. Greiser, C. Guetter, A. Littmann, M. P. Jolly, A. E.
+	Arai, S. Zuehlsdorff, J. Guehring, P. Kellman, Motion correction for myocardial T1 mapping using image registration with synthetic image estimation, Magnetic Resonance in Medicine  (2012) 1644--1645.
+	\bibitem{VanDeGiessen2013}
+	M. Van De Giessen, Q. Tao, R. J. Van Der Geest, B. P. F. Lelieveldt, Model-based alignment of Look-Locker MRI sequences for calibrated myocardical scar tissue quantification, in: Proceedings - International Symposium on
+	Biomedical Imaging, 2013.
+	\bibitem{Likhite2015}
+	D. Likhite, G. Adluru, E. DiBella, Deformable and Rigid Model-Based
+	Image Registration for Quantitative Cardiac Perfusion, in: O. Camara,
+	T. Mansi, M. Pop, K. Rhode, M. Sermesant, A. Young (Eds.), Statistical
+	Atlases and Computational Models of the Heart - Imaging and Modelling Challenges, volume 8896 of Lecture Notes in Computer Science, Springer International Publishing, 2015, 41--50. 
+	\bibitem{Tilborghs2019}
+	S. Tilborghs, T. Dresselaers, P. Claus, G. Claessen, J. Bogaert, F. Maes,
+	P. Suetens, Robust motion correction for cardiac T1 and ECV mapping using a T1 relaxation model approach, Medical Image Analysis (2019) 212--227.
+	\bibitem{Bhushan2011}
+	M. Bhushan, J. A. Schnabel, L. Risser, M. P. Heinrich, J. M. Brady,
+	M. Jenkinson, Motion correction and parameter estimation in DCE-MRI sequences: Application to colorectal cancer, in: Lecture Notes in Computer  Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 2011. 
+	\bibitem{Enescu2014}
+	M. Enescu, M. Heinrich, E. Hill, R. Sharma, M. Chappell, J. Schnabel, An MRF-based discrete optimization framework for combined DCE-MRI motion correction and pharmacokinetic parameter estimation, Lecture Notes	in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics) 84 (2014) 73--84.
+	\bibitem{Hallack2014}
+	A. Hallack, M. A. Chappell, M. J. Gooding, J. A. Schnabel, A new similarity metric for groupwise registration of variable flip angle sequences for
+	improved t10 estimation in DCE-MRI, in: S. Ourselin, M. Modat (Eds.),Biomedical Image Registration, Springer International Publishing, Cham, 595 2014, 154--163.
+	\bibitem{Jhaveri2015}
+	K. S. Jhaveri, H. Hosseini-Nik, MRI of rectal cancer: An overview and update on recent advances, AJR. American journal of roentgenology (2015) W42--W55.
+	\bibitem{Kurugol2017}
+	S. Kurugol, M. Freiman, O. Afacan, L. Domachevsky, J. M. Perez-Rossello,
+	M. J. Callahan, S. K. Warfield, Motion-robust parameter estimation in
+	abdominal diffusion-weighted MRI by simultaneous image registration and model estimation, Medical Image Analysis (2017) 124--132.
+	\bibitem{Zollner2020}
+	F. G. Z$\ddot{\text{o}}$llner, A. $\v{S}$erifovi$\'{c}$--Trbali$\'{c}$, G. Kabelitz, M. Koci$\'{n}$ski A. Materka, P.  Rogelj, Image registration in dynamic renal MRI-current status and prospects, MAGMA33(1) (2020) 33--48.
+	\bibitem{Basak2019}
+	S. Basak, D. L. Buckley, C. Chrysochou, A. Banerji, D. Vassallo, A. Odudu,
+	P. A. Kalra, S. P. Sourbron, Analytical validation of single-kidney glomerular filtration rate and split renal function as measured with magnetic resonance renography, Magnetic resonance imaging 59 (2019) 53--60.
+	\bibitem{Murase2004}
+	K. Murase, Efficient method for calculating kinetic parameters using t1-weighted dynamic contrast-enhanced magnetic resonance imaging, Magnetic resonance in medicine 51 (2004) 858--862.
+	\bibitem{Flouri2016}
+	D. Flouri, D. Lesnic, S. P. Sourbron, Fitting the two-compartment model in	DCE-MRI by linear inversion, Magnetic Resonance in Medicine 76 (2016) 998--1006.
+	\bibitem{Sourbron2012}
+	S. P. Sourbron, D. L. Buckley, Tracer kinetic modelling in MRI: estimating perfusion and capillary permeability, Physics in Medicine and Biology 57 (2012) R1--R33.
+	\bibitem{Sorzano2005}
+	C. O. S. Sorzano, P. Thvenaz, M. Unser, Elastic registration of biological images using vector-spline regularization, IEEE transactions on biomedical engineering 52 (2005) 652--663.
+	\bibitem{Parker2006}
+	G. J. M. Parker, C. Roberts, A. Macdonald, G. a. Buonaccorsi, S. Cheung, D. L. Buckley, A. Jackson, Y. Watson, K. Davies, G. C. Jayson,
+	Experimentally-derived functional form for a population-averaged high-temporal-resolution arterial input function for dynamic contrast-enhanced MRI, Magnetic resonance in medicine 56 (2006) 993–1000.
+	\bibitem{Lim2013}
+	S.W. Lim, C. Chrysochou, D. L. Buckley, P. A. Kalra, S. P. Sourbron, Prediction and assessment of responses to renal artery revascularization with dynamic contrast-enhanced magnetic resonance imaging: a pilot study. Am J Physiol Renal Physiol 305 (2013) F672--8. 
+	\bibitem{Tofts1999}
+	P. S. Tofts , G Brix, D. L. Buckley, et al. Estimating kinetic parametersfrom dynamic contrast-enhanced T1-weighted MRI of a diffusabletracer: Standardized quantities and symbols. J Magn Reson Imaging 10 (1999) 223--232.
+	\bibitem{Sourbron2008}
+	Sourbron, S. P, Michaely, H. J, Reiser, M. F, and Schoenberg, S. O.  MRI-measurement of perfusion and glomerular filtration in the human kidney with a separable compartment model. Investigative Radiology, 43 (2008) 40–48.
+	\bibitem{Sourbron2013}
+	Sourbron, S. P. and Buckley, D. L.  Tracer kinetic modelling in MRI: estimating perfusion and capillary permeability. Physics in Medicine and Bio- logy, 57 (2012) R1–R33.
+	\bibitem{Qiao2019}
+	Y. Qiao, B. P. F. Lelieveldt, M. Staring, An efficient preconditioner forstochastic gradient descent optimization of image registration, IEEE Transactions on Medical Imaging 38 (2019) 2314--2325.
+	\bibitem{Modat2010}
+	M. Modat, G. R. Ridgway, Z. A. Taylor, M. Lehmann, J. Barnes, D. J.
+	Hawkes, N. C. Fox, S. Ourselin, Fast free-form deformation using graphics
+	processing units, Computer methods and programs in biomedicine 98 (2010) 278--284.
+	\bibitem{Klein2010}
+	S. Klein, M. Staring, K. Murphy, M. A. Viergever, J. P. W. Pluim, elastix: a
+	toolbox for intensity-based medical image registration, IEEE transactions on medical imaging 29 (2010) 196--205.
+	\bibitem{Tustison2013}
+	N. J. Tustison, B. B. Avants, Explicit b-spline regularization in diffeomor635 phic image registration, Frontiers in neuroinformatics 7 (2013) 39.
+	\bibitem{Lv2018}
+	J. Lv, M. Yang, J. Zhang, X. Wang, Respiratory motion correction for
+	free-breathing 3d abdominal MRI using cnn-based image registration: a  feasibility study, The British journal of radiology 91 (2018) 20170788.
+	\bibitem{Vos2019}
+	B. D. de Vos, F. F. Berendsen, M. A. Viergever, H. Sokooti, M. Staring, I. Igum, A deep learning framework for unsupervised affine and deformable  image registration, Medical image analysis 52 (2019) 128–143.
+	\bibitem{Ippoliti2019}
+	M. Ippoliti, M. Lukas, W. Brenner, T. Schaeffter, M. R. Makowski, C. Kolbitsch, 3d nonrigid motion correction for quantitative assessment of hepatic lesions in DCE-MRI, Magnetic resonance in medicine 82 (2019) 1753--1766.
+	\bibitem{Dikaios2014}
+	N. Dikaios, S. Arridge, V. Hamy, S. Punwani, D. Atkinson, Direct parametric reconstruction from undersampled (k, t)-space data in dynamic contrast enhanced , Medical image analysis 18 (2014) 989–1001.
+	\bibitem{Guo2017}
+	Y. Guo, S. G. Lingala, Y. Zhu, R. M. Lebel, K. S. Nayak, Direct estimation
+	of tracer-kinetic parameter maps from highly undersampled brain dynamic	contrast enhanced MRI, Magnetic resonance in medicine 78 (2017) 1566--1578.
+\end{thebibliography}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/1.eps}
+		\caption{ Original time series before motion correction with frame indices: (a) DRO data with rigid motion; (b) DRO data with nonrigid motion; (c) 2D MRR data for subject 3; (d) 3D MRR data for subject 1.}
+	\end{center}
+	
+\end{figure}
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/2.eps}
+		\caption{ Selection of an optimal gridsize $\Delta_{min}$ for the example of 2D patient data (top rows) and DRO with non-rigid motion (bottom rows). All calculations are performed at the lowest tolerance of $\delta_{min}=$ 0.1 pixels. For each dataset the figure shows the results for plasma flow ($F_P$) and tubular flow ($F_T$) at different gridsizes from lowest (left, 4 pixels and 2 pixels, respectively) to highest (right, 256 pixels and 128 pixels, respectively). The unregistered result is shown in the right most column. For the DRO the ground truth is given on the left. Motion corrections are performed over the entire image, but results are cropped to the right kidney to show the detail. The dashed lines show the selected gridsize for each case. Dynamics, results for the other two parameters and error maps for the DRO are shown in the supplementary material.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/3.eps}
+		\caption{ Selection of an optimal tolerance $\delta_{min}$ for the example of 2D patient data (top rows) and DRO with non-rigid motion (bottom rows). All calculations are performed at the optimal gridsize of 32 pixels (see Figure 2). For each dataset the figure shows the results for plasma flow ($F_P$) and tubular flow ($F_T$) at different tolerances from lowest (left, 0.1 pixels) to highest (right, 1 pixel). For the patient data, the calculation times for each tolerance level are also shown. Motion corrections are performed over the entire image, but results are cropped to the right kidney to show the detail. The dashed lines show the selected tolerance for each case. Dynamics, results for the other two parameters and error maps for the DRO are shown in the supplementary material.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/4.eps}
+		\caption{  Illustration of the effect of motion correction at different time points with layout exactly as in Figure 1. Time series after motion correction with frame indices: (a) DRO data with rigid motion; (b) DRO data with nonrigid motion; (c) 2D MRR data of subject 3; (d) 3D MRR data of subject 1.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=10cm]{Figures/5.eps}
+		\caption{  Effect of registration in {\bf (a)} simulated data, {\bf (b)} Effect of registration in {\bf (a)} DRO data, {\bf (b)} 2D MRR of subject 3 and {\bf (c)} 3D MRR of subject 1. The plots show the signal-time curves (dashed-line) and the model fit (solid line) before and after motion correction. The plasma flow $(F_P)$ maps before and after motion correction are also presented.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/6.eps}
+		\caption{ Effects of registration in superior-inferior direction in all 2D data sets. A sagittal view is presented for anatomical reference, with a dashed line to indicate the location of the time-cuts.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/7.eps}
+		\caption{ Effects of registration in anterior-posterior direction in all patients. A sagittal view is included for anatomical reference, with a dashed line to indicate the location of the time-cuts.}
+	\end{center}
+\end{figure}
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/8.eps}
+		\caption{ Error distribution before and after motion correction for the simulated data at CNR from 10$^0$ (high noise level) to 10$^4$ (low noise level). The columns show the two parameters and the rows show different motion types: no motion (top row), rigid motion (middle row), non-rigid motion (bottom row). The circles indicate the median relative parameter error for all the pixels in the image, and the error bars represent the 90\%  confidence intervals. For reasons of clarity, only two of the parameters are displayed; the trends in the other two parameters were similar.}
+	\end{center}
+\end{figure}
+
+
+\begin{figure}[tb!]
+	\begin{center}
+		\includegraphics[width=\textwidth]{Figures/9.eps}
+		\caption{  Illustration of the effect of motion correction at different time points using the modified-Tofts model (top row) and the two-compartment model (bottom row) for simulated data and patient data respectively. Arrows indicate areas of poor registration due to model-error.}
+	\end{center}
+\end{figure}
+
+\end{document}
+

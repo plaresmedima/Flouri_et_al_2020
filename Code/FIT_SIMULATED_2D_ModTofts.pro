@@ -43,8 +43,6 @@ PRO FIT_SIMULATED_2D_ModTofts, DataSet, tolerance=tol, Grid_size=grid, NCR=ncr, 
 ;Fit data and export
 
 	IF KEYWORD_SET(nomoco) THEN BEGIN
-	 ; Source = MoCoModelFit(Source, ModelName, Independent, PARAMETERS=p_rec)
-	 ; IF ModelName EQ 'TwoCompartmentFiltration' THEN p_rec = PHYSICAL_2CFM_PARS(p_rec)
 	  Source = MoCoModelFit(Source, ModelName, Independent, PARAMETERS=p_rec)
 	  p_rec = physical_ModTofts_pars(p_rec)
   	  EXPORT_GIF, Source, path + 'Dynamics_fit', [0,max(source)]
@@ -70,8 +68,7 @@ PRO FIT_SIMULATED_2D_ModTofts, DataSet, tolerance=tol, Grid_size=grid, NCR=ncr, 
   	EXPORT_GIF, Def, path + 'Deformation_fields', [0,max(Def)]
 
 ;Fit MDR and export
-;	Source = MoCoModelFit(Source, ModelName, Independent, PARAMETERS=p_rec)
-;	IF ModelName EQ 'TwoCompartmentFiltration' THEN p_rec = PHYSICAL_2CFM_PARS(p_rec)
+
 	Source = MoCoModelFit(Source, ModelName, Independent, PARAMETERS=p_rec)
 	p_rec = physical_ModTofts_pars(p_rec)
 	EXPORT_GIF, Source, path + 'Dynamics_mdr_fit', [0,max(source)]

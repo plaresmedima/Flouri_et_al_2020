@@ -17,7 +17,7 @@ The code is written in IDL and requires IDL version 6.3 or higher. In order to r
 - Download and extract the raw data files from Zenodo (DOI)
 - Open IDL and set the IDL search path to the top folder "Code"
 - In the file MDR_PATH.pro, set the path where the data are stored and where the results need to be saved
-- Compile and run __MAIN_MDR.pro. This will run a test function at very coarse resolution. This should take a few minutes.
+- Compile and run __MAIN_MDR.pro. This will run a test function at very coarse resolution and should take a few minutes.
 - Check the output in the results folder. To run all other procedures, comment out the first line in __MAIN_MDR.pro and run again (days). 
 
  

@@ -1,6 +1,6 @@
 PRO FIT_MEASURED_2D, DataSet, tolerance=tol, Grid_size=grid, NOMOCO=nomoco
 
-	IF N_ELEMENTS(DataSet) EQ 0 THEN DataSet = 'RIFF_C03'
+	IF N_ELEMENTS(DataSet) EQ 0 THEN DataSet = 'Vol_E'
 	IF N_ELEMENTS(tol) EQ 0 THEN tol = 0.1
 	IF N_ELEMENTS(grid) EQ 0 THEN grid = 1
 

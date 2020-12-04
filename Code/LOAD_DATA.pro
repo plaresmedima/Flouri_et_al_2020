@@ -39,7 +39,7 @@
       slice = 0
     end
 
-    'RIFF_1':begin
+    'Vol_B':begin
       nx = 480
       ny = 480
       nz = 3
@@ -49,7 +49,7 @@
       slice = 1
     end
 
-    'RIFF_C02':begin
+    'Vol_D':begin
       nx = 480
       ny = 480
       nz = 3
@@ -59,7 +59,7 @@
       slice = 1
     end
 
-    'RIFF_C03':begin
+    'Vol_E':begin
       nx = 480
       ny = 480
       nz = 3
@@ -69,7 +69,7 @@
       slice = 1
     end
 
-    'RIFF_C04':begin
+    'Vol_C':begin
       nx = 512
       ny = 512
       nz = 3
@@ -79,7 +79,7 @@
       slice = 1
     end
 
-    'RIFF_C05':begin
+    'Vol_A':begin
       nx = 528
       ny = 528
       nz = 3
@@ -89,7 +89,7 @@
       slice = 1
     end
 
-    'RIFF_F01':begin
+    'Patient_A':begin
       nx = 480
       ny = 480
       nz = 3

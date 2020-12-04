@@ -14,11 +14,11 @@ PRO __MAIN_MDR
 
 ;Fit measured data (2D, 2CFM)
 
-	FIT_MEASURED_2D, 'RIFF_C03', tolerance=5.0, Grid_size=32
+	FIT_MEASURED_2D, 'Vol_E', tolerance=5.0, Grid_size=32
 
 ;Fit measured data (2D, ModTofts)
 
-	FIT_MEASURED_2D_ModTofts, 'RIFF_C03', tolerance=5.0, Grid_size=32
+	FIT_MEASURED_2D_ModTofts, 'Vol_E', tolerance=5.0, Grid_size=32
 
 ;Fit measured data (3D)
 

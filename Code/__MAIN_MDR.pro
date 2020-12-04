@@ -1,8 +1,9 @@
 PRO __MAIN_MDR
 
-	FIT_SIMULATED_2D, 'NonRigid_Motion', tolerance=0.2, Grid_size=32, NCR=1/50.
+;Test function at coarse resolution
+;Comment this line out to run all other procedures
 
-	RETURN
+	FIT_SIMULATED_2D, 'NonRigid_Motion', tolerance=5, Grid_size=65, NCR=1/50. & RETURN
 
 ;Create simulated data
 

@@ -5,7 +5,7 @@ The repository contains a preprint of the manuscript (in pdf and LaTeX format) a
 
 **Data**
 
-The data that are accessed by the code are released on the [Open Science Framework](https://osf.io/asykz/) and are derived from two retrospective datasets:
+The data that are accessed by the code are released on the [Open Science Framework](https://osf.io/asykz/) (DOI 10.17605/OSF.IO/ASYKZ) and are derived from two retrospective datasets:
 
 - A series of [2D DICOM data](https://doi.org/10.25405/data.ncl.13180328) provided by [Pete Thelwall](https://www.ncl.ac.uk/magres/staff/profile/petethelwall.html#background).
 - A series of 3D DICOM data previously used in [Basak et al 2019](https://www.sciencedirect.com/science/article/abs/pii/S0730725X18305873?via%3Dihub)

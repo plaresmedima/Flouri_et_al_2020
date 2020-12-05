@@ -1,5 +1,5 @@
 # Flouri_et_al_2020
-Supplementary material for manuscript by Fouri et al (2020) on "Motion correction of free-breathing magnetic resonance renography using model-driven registration"
+Supplementary material for manuscript by Flouri et al (2020) on "Motion correction of free-breathing magnetic resonance renography using model-driven registration"
 
 The repository contains a preprint of the manuscript (in pdf and LaTeX format) and the code used the generate the synthetic data and fit the synthetic and patient data.
 

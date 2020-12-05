@@ -99,7 +99,7 @@
       slice = 1
     end
 
-    'AC51a':BEGIN
+    'Participant_A':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -108,7 +108,7 @@
       Folder = 'Patient_3D'
     END
 
-    'BA50a':BEGIN
+    'Participant_B':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -117,7 +117,7 @@
       Folder = 'Patient_3D'
     END
 
-    'CH6a':BEGIN
+    'Participant_C':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -126,7 +126,7 @@
       Folder = 'Patient_3D'
     END
 
-    'CW8a':BEGIN
+    'Participant_D':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -135,7 +135,7 @@
       Folder = 'Patient_3D'
     END
 
-    'EA14a':BEGIN
+    'Participant_E':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -144,7 +144,7 @@
       Folder = 'Patient_3D'
     END
 
-    'FJ14a':BEGIN
+    'Participant_F':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -153,7 +153,7 @@
       Folder = 'Patient_3D'
     END
 
-    'GD7a':BEGIN
+    'Participant_G':BEGIN
       nx = 128
       ny = 128
       nz = 20
@@ -162,7 +162,7 @@
       Folder = 'Patient_3D'
     END
 
-    'HD3a':BEGIN
+    'Participant_H':BEGIN
       nx = 128
       ny = 128
       nz = 20

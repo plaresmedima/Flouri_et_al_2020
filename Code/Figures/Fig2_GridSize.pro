@@ -13,11 +13,11 @@ PRO Fig2_GridSize
 
 ;Fit measure data in 2D, with different grid sizes
 
-	FIT_MEASURED_2D, 'RIFF_C03_sl0', /NOMOCO
-	FIT_MEASURED_2D, 'RIFF_C03_sl0', tolerance=0.1, Grid_size=256
-	FIT_MEASURED_2D, 'RIFF_C03_sl0', tolerance=0.1, Grid_size=128
-	FIT_MEASURED_2D, 'RIFF_C03_sl0', tolerance=0.1, Grid_size=64
-	FIT_MEASURED_2D, 'RIFF_C03_sl0', tolerance=0.1, Grid_size=32
+	FIT_MEASURED_2D, 'Vol_E', /NOMOCO
+	FIT_MEASURED_2D, 'Vol_E', tolerance=0.1, Grid_size=256
+	FIT_MEASURED_2D, 'Vol_E', tolerance=0.1, Grid_size=128
+	FIT_MEASURED_2D, 'Vol_E', tolerance=0.1, Grid_size=64
+	FIT_MEASURED_2D, 'Vol_E', tolerance=0.1, Grid_size=32
 
 
 END

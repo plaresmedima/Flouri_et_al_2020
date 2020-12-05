@@ -1,6 +1,6 @@
 PRO FIT_MEASURED_3D, DataSet, tolerance=tol, Grid_size=grid
 
-	IF N_ELEMENTS(DataSet) EQ 0 THEN DataSet = 'AC51a'
+	IF N_ELEMENTS(DataSet) EQ 0 THEN DataSet = 'Participant_A'
 	IF N_ELEMENTS(tol) EQ 0 THEN tol = 0.1
 	IF N_ELEMENTS(grid) EQ 0 THEN grid = 1
 
